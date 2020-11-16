@@ -52,6 +52,7 @@ public class PrometheusMetric implements MonitorService {
         DefaultExports.initialize();
         new JmxExports().register();
         try {
+            LOG.info("monitor server: {}:{}", host, port);
             server = new HTTPServer(host, port, true);
         } catch (IOException e) {
             LOG.error("Error when starting http server", e);
