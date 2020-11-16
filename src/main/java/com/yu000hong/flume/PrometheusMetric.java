@@ -49,24 +49,6 @@ public class PrometheusMetric implements MonitorService {
 
     @Override
     public void start() {
-//        try {
-//            PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(
-//                PrometheusConfig.DEFAULT);
-//            InetSocketAddress address = new InetSocketAddress(host, port);
-//            server = HttpServer.create(address, 10);
-//            server.createContext("/prometheus", httpExchange -> {
-//                String response = prometheusRegistry.scrape();
-//                httpExchange.sendResponseHeaders(200, response.getBytes().length);
-//                try (OutputStream os = httpExchange.getResponseBody()) {
-//                    os.write(response.getBytes());
-//                }
-//            });
-//            server.setExecutor(Executors.newFixedThreadPool(3));
-//            server.start();
-//        } catch (IOException e) {
-//            LOG.error("Error when starting http server", e);
-//            throw new RuntimeException(e);
-//        }
         DefaultExports.initialize();
         new JmxExports().register();
         try {
@@ -96,21 +78,21 @@ public class PrometheusMetric implements MonitorService {
             try {
                 server.stop();
             } catch (Exception e) {
-                LOG.error("Error when stopping", e);
+                LOG.error("Error when stopping http server", e);
             }
         }
         if (status != null) {
             try {
                 status.leave();
             } catch (Exception e) {
-                LOG.error("Error when stopping", e);
+                LOG.error("Error when leaving serversets", e);
             }
         }
         if (zkClient != null) {
             try {
                 zkClient.close();
             } catch (Exception e) {
-                LOG.error("Error when stopping", e);
+                LOG.error("Error when closing zookeeper client", e);
             }
         }
     }
@@ -145,7 +127,7 @@ public class PrometheusMetric implements MonitorService {
         }).collect(Collectors.toList());
     }
 
-    class JmxExports extends Collector {
+    private static class JmxExports extends Collector {
 
         @Override
         public List<MetricFamilySamples> collect() {
@@ -179,11 +161,11 @@ public class PrometheusMetric implements MonitorService {
             String help = type + " " + key;
             if (metricType == MetricType.GAUGE) {
                 GaugeMetricFamily gauge = new GaugeMetricFamily(metric, help, labels);
-                gauge.addMetric(labelValues, Double.parseDouble(value));
+                gauge.addMetric(labelValues, v);
                 return gauge;
             } else {
                 CounterMetricFamily counter = new CounterMetricFamily(metric, help, labels);
-                counter.addMetric(labelValues, Double.parseDouble(value));
+                counter.addMetric(labelValues, v);
                 return counter;
             }
         }
@@ -191,8 +173,8 @@ public class PrometheusMetric implements MonitorService {
 
         private MetricType getMetricType(String type, String metric) {
             List<String> noneMetrics = Lists.newArrayList("Type", "StartTime", "StopTime");
-            List<String> channelGauges = Lists
-                .newArrayList("ChannelCapacity", "ChannelFillPercentage", "ChannelSize");
+            List<String> channelGauges = Lists.newArrayList(
+                "ChannelCapacity", "ChannelFillPercentage", "ChannelSize");
             if (noneMetrics.contains(metric)) {
                 return MetricType.NONE;
             }
