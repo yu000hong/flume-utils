@@ -2,7 +2,6 @@ package com.yu000hong.flume;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import com.google.common.collect.Lists;
 import com.twitter.finagle.common.zookeeper.ServerSet;
 import com.twitter.finagle.common.zookeeper.ServerSet.EndpointStatus;
 import com.twitter.finagle.common.zookeeper.ServerSetImpl;
@@ -155,8 +154,8 @@ public class PrometheusMetric implements MonitorService {
             if (metricType == MetricType.NONE) {
                 return null;
             }
-            List<String> labels = Lists.newArrayList("type", "name");
-            List<String> labelValues = Lists.newArrayList(type, name);
+            List<String> labels = Arrays.asList("type", "name");
+            List<String> labelValues = Arrays.asList(type, name);
             double v = Double.parseDouble(value);
             String metric = "FLUME_" + type + "_" + key;
             String help = type + " " + key;
@@ -173,8 +172,8 @@ public class PrometheusMetric implements MonitorService {
 
 
         private MetricType getMetricType(String type, String metric) {
-            List<String> noneMetrics = Lists.newArrayList("Type", "StartTime", "StopTime");
-            List<String> channelGauges = Lists.newArrayList(
+            List<String> noneMetrics = Arrays.asList("Type", "StartTime", "StopTime");
+            List<String> channelGauges = Arrays.asList(
                 "ChannelCapacity", "ChannelFillPercentage", "ChannelSize");
             if (noneMetrics.contains(metric)) {
                 return MetricType.NONE;
@@ -185,6 +184,7 @@ public class PrometheusMetric implements MonitorService {
                 return MetricType.COUNTER;
             }
         }
+
     }
 
     private enum MetricType {
