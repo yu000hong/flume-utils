@@ -61,7 +61,7 @@ public class PrometheusMetric implements MonitorService {
         if (zkEnabled) {
             try {
                 List<InetSocketAddress> servers = parseZkServers(zkServers);
-                zkClient = new ZooKeeperClient(Duration.apply(1000, MILLISECONDS), servers);
+                zkClient = new ZooKeeperClient(Duration.apply(10000, MILLISECONDS), servers);
                 ServerSet serverSet = new ServerSetImpl(zkClient, zkPath);
                 status = serverSet.join(new InetSocketAddress(host, port), new HashMap<>(0));
                 LOG.info("serversets status: {}", status.toString());
